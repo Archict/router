@@ -2,6 +2,7 @@
     "name": "archict/router",
     "description": "Simple HTTP router",
     "type": "archict-brick",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "Archict\\Router\\": "include/"
