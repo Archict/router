@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Archict\BrickTemplate;
+namespace Archict\Router;
 
 use Archict\Brick\ListeningEvent;
 use Archict\Brick\Service;

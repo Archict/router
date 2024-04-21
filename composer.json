@@ -1,10 +1,10 @@
 {
-    "name": "archict/brick-template",
-    "description": "Template for Bricks",
+    "name": "archict/router",
+    "description": "Simple HTTP router",
     "type": "archict-brick",
     "autoload": {
         "psr-4": {
-            "Archict\\BrickTemplate\\": "include/"
+            "Archict\\Router\\": "include/"
         }
     },
     "require": {
@@ -13,7 +13,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Archict\\BrickTemplate\\": "tests/unit"
+            "Archict\\Router\\": "tests/unit"
         }
     },
     "require-dev": {

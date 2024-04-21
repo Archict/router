@@ -25,7 +25,7 @@
 
 declare(strict_types=1);
 
-namespace Archict\BrickTemplate;
+namespace Archict\Router;
 
 final class MyEvent
 {
