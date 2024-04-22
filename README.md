@@ -33,8 +33,6 @@ Then just create the route with the Event object:
 **With a closure:**
 
 ```php
-use GuzzleHttp\Psr7\ServerRequest;
-
 $event->addRoute(Method::GET, '/hello', static fn() => 'Hello World!');
 ```
 
@@ -73,9 +71,9 @@ The pattern can be empty, then it will match all characters until next `/` (or t
 shortcuts:
 
 - `\d+` match digits `[0-9]+`
-- `\s+` match letters `[a-zA-Z]+`
+- `\l+` match letters `[a-zA-Z]+`
 - `\a+` match digits and letters `[a-zA-Z0-9]+`
-- `\l+` match digits, letters and underscore `[a-zA-Z0-9_]+`
+- `\s+` match digits, letters and underscore `[a-zA-Z0-9_]+`
 
 You can also have an optional suffix to your route with `[/suffix]`.
 
@@ -111,8 +109,8 @@ class MyService {
 }
 ```
 
-If you define your middleware with a closure, then it must return a `Request` (or throw, we'll see that later). If it's
-an object, then your class must implement interface `Middleware`:
+If you define your middleware with a closure, then it must return a `Request`. If it's an object, then your class must
+implement interface `Middleware`:
 
 ```php
 class MyMiddleware implements Middleware
