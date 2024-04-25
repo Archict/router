@@ -10,7 +10,9 @@
     },
     "require": {
         "php": ">= 8.2",
-        "archict/brick": "^0"
+        "archict/brick": "^0",
+        "guzzlehttp/psr7": "^2.6",
+        "psr/http-message": "^2.0"
     },
     "autoload-dev": {
         "psr-4": {

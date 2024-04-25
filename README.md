@@ -41,10 +41,13 @@ The closure can take a `Request` as argument, and return a string or a `Response
 **With a controller class**
 
 ```php
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+
 $event->addRoute(Method::GET, '/hello', new MyController());
 
 class MyController implements RequestHandler {
-    public function handle(Request $request): Response
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
         return ResponseFactory::build()
             ->withStatus(200)
@@ -93,13 +96,14 @@ many middlewares as you want. To define one, the procedure is pretty the same as
 use Archict\Brick\Service;
 use Archict\Brick\ListeningEvent;
 use Archict\Router\RouteCollectorEvent;
+use Psr\Http\Message\ServerRequestInterface;
 
 #[Service]
 class MyService {
     #[ListeningEvent]
     public function routeCollector(RouteCollectorEvent $event) 
     {
-        $event->addMiddleware(Method::GET, '/hello', static function(Request $request): Request {
+        $event->addMiddleware(Method::GET, '/hello', static function(ServerRequestInterface $request): ServerRequestInterface {
             // Do something
             return $request
         });
@@ -113,9 +117,11 @@ If you define your middleware with a closure, then it must return a `Request`. I
 implement interface `Middleware`:
 
 ```php
+use Psr\Http\Message\ServerRequestInterface;
+
 class MyMiddleware implements Middleware
 {
-    public function process(Request $request): Request
+    public function process(ServerRequestInterface $request): ServerRequestInterface
     {
         return $request;
     }
