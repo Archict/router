@@ -13,7 +13,8 @@
         "archict/brick": "^0",
         "guzzlehttp/psr7": "^2.6",
         "psr/http-message": "^2.0",
-        "archict/core": "^0.2"
+        "archict/core": "^0.2",
+        "cuyz/valinor": "^1.12"
     },
     "autoload-dev": {
         "psr-4": {

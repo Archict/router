@@ -24,4 +24,11 @@ final class RouterTest extends TestCase
         self::assertTrue($this->service_manager->has(Router::class));
         self::assertInstanceOf(Router::class, $this->service_manager->get(Router::class));
     }
+
+    public function testItNotThrow(): void
+    {
+        $router = $this->service_manager->get(Router::class);
+        self::assertNotNull($router);
+        $router->route();
+    }
 }

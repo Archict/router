@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4b44037d6f1f11e775aa02866708b681",
+    "content-hash": "18d056605540710c3394fa82646550e9",
     "packages": [
         {
             "name": "archict/brick",
