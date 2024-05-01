@@ -28,7 +28,6 @@ declare(strict_types=1);
 namespace Archict\Router\Route;
 
 use Archict\Router\Exception\RouterException;
-use Archict\Router\Method;
 use Archict\Router\RequestHandler;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -36,49 +35,47 @@ use Psr\Http\Message\ServerRequestInterface;
 /**
  * @internal
  */
-final class RouteCollection
+final class RouteHelper
 {
-    /**
-     * @var array<non-empty-string, RouteInformation[]>
-     */
-    private array $routes = [];
-
-    /**
-     * @param RequestHandler|callable(ServerRequestInterface): (ResponseInterface|string) $handler
-     * @throws RouterException
-     */
-    public function addRoute(Method $method, string $route, RequestHandler|callable $handler): bool
+    private function __construct()
     {
-        $route_regex = RouteHelper::routeToRegex($route, false);
-        if ($this->hasRoute($method, $route_regex)) {
-            return false;
-        }
-
-        if (!isset($this->routes[$route_regex])) {
-            $this->routes[$route_regex] = [];
-        }
-
-        $this->routes[$route_regex][] = new RouteInformation(
-            $method,
-            $route,
-            RouteHelper::routeToRegex($route),
-            is_callable($handler) ? RouteHelper::callableToRequestHandler($handler) : $handler,
-        );
-
-        return true;
     }
 
-    private function hasRoute(Method $method, string $route_regex): bool
+    /**
+     * Regex will be of form '{pattern}'
+     *
+     * @return non-empty-string
+     * @throws RouterException
+     */
+    public static function routeToRegex(string $route, bool $named_group = true): string
     {
-        if (isset($this->routes[$route_regex])) {
-            $route_informations = $this->routes[$route_regex];
-            foreach ($route_informations as $route_information) {
-                if ($route_information->method === $method || $route_information->method === Method::ALL || $method === Method::ALL) {
-                    return true;
-                }
-            }
-        }
+        $route  = ltrim($route, '/');
+        $parser = new RouteParser($named_group);
 
-        return false;
+        return $parser->parse(mb_str_split($route));
+    }
+
+    /**
+     * @param callable(ServerRequestInterface): (ResponseInterface|string) $handler_function
+     */
+    public static function callableToRequestHandler(callable $handler_function): RequestHandler
+    {
+        return new class($handler_function) implements RequestHandler {
+            /**
+             * Class cannot have a callable as property (php82)
+             * @var non-empty-array<callable(ServerRequestInterface): (ResponseInterface|string)>
+             */
+            private readonly array $handler;
+
+            public function __construct(callable $handler)
+            {
+                $this->handler = [$handler];
+            }
+
+            public function handle(ServerRequestInterface $request): ResponseInterface|string
+            {
+                return $this->handler[0]($request);
+            }
+        };
     }
 }

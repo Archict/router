@@ -6,6 +6,8 @@ namespace Archict\Router;
 
 use Archict\Brick\Service;
 use Archict\Core\Event\EventDispatcher;
+use Archict\Router\Exception\FailedToCreateRouteException;
+use Archict\Router\Exception\RouterException;
 use Archict\Router\Route\RouteCollection;
 use CuyZ\Valinor\Mapper\MappingError;
 use CuyZ\Valinor\Mapper\TreeMapper;
@@ -13,6 +15,7 @@ use CuyZ\Valinor\MapperBuilder;
 use CuyZ\Valinor\Normalizer\Format;
 use CuyZ\Valinor\Normalizer\Normalizer;
 use Psr\SimpleCache\CacheInterface;
+use Psr\SimpleCache\InvalidArgumentException;
 
 #[Service]
 final class Router
@@ -30,11 +33,20 @@ final class Router
         $this->normalizer = (new MapperBuilder())->normalizer(Format::json());
     }
 
+    /**
+     * @throws RouterException
+     * @throws InvalidArgumentException
+     */
     public function route(): void
     {
         $this->loadRoutes();
+        // TODO: get current uri, and route it to handler
     }
 
+    /**
+     * @throws RouterException
+     * @throws InvalidArgumentException
+     */
     private function loadRoutes(): void
     {
         if ($this->cache->has(self::CACHE_KEY)) {
@@ -49,14 +61,29 @@ final class Router
         }
     }
 
+    /**
+     * @throws RouterException
+     * @throws InvalidArgumentException
+     */
     private function collectRoutes(): void
     {
         $this->route_collection = new RouteCollection();
 
-        $collector         = $this->event_dispatcher->dispatch(new RouteCollectorEvent());
-        $_collected_routes = $collector->getCollectedRoutes();
+        $collector        = $this->event_dispatcher->dispatch(new RouteCollectorEvent());
+        $collected_routes = $collector->getCollectedRoutes();
 
-        // TODO: check route not already defined in collection then add it in it
+        foreach ($collected_routes as $collected_route) {
+            $method  = $collected_route['method'];
+            $route   = $collected_route['route'];
+            $handler = $collected_route['handler'];
+            if (is_string($method)) {
+                $method = Method::fromString($method);
+            }
+
+            if (!$this->route_collection->addRoute($method, $route, $handler)) {
+                throw new FailedToCreateRouteException($method, $route);
+            }
+        }
 
         $cache_value = $this->normalizer->normalize($this->route_collection);
         $this->cache->set(self::CACHE_KEY, $cache_value);

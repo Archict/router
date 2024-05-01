@@ -32,5 +32,5 @@ use Psr\Http\Message\ServerRequestInterface;
 
 interface RequestHandler
 {
-    public function handle(ServerRequestInterface $request): ResponseInterface;
+    public function handle(ServerRequestInterface $request): ResponseInterface|string;
 }

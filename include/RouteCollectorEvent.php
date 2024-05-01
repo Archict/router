@@ -27,19 +27,23 @@ declare(strict_types=1);
 
 namespace Archict\Router;
 
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+
 final class RouteCollectorEvent
 {
     /**
-     * @var array{
+     * @var array<array{
      *     method: Method|non-empty-string,
      *     route: string,
-     *     handler: RequestHandler|callable,
-     * }[]
+     *     handler: RequestHandler|callable(ServerRequestInterface): (ResponseInterface|string),
+     * }>
      */
     private array $routes = [];
 
     /**
      * @param Method|non-empty-string $method
+     * @param RequestHandler|callable(ServerRequestInterface): (ResponseInterface|string) $handler
      */
     public function addRoute(Method|string $method, string $route, RequestHandler|callable $handler): void
     {
@@ -51,11 +55,11 @@ final class RouteCollectorEvent
     }
 
     /**
-     * @return array{
+     * @return array<array{
      *      method: Method|non-empty-string,
      *      route: string,
-     *      handler: RequestHandler|callable,
-     *  }[]
+     *      handler: RequestHandler|callable(ServerRequestInterface): (ResponseInterface|string),
+     *  }>
      */
     public function getCollectedRoutes(): array
     {

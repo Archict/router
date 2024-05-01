@@ -27,6 +27,8 @@ declare(strict_types=1);
 
 namespace Archict\Router;
 
+use Archict\Router\Exception\MethodNotAllowedException;
+
 enum Method: string
 {
     case GET     = 'GET';
@@ -47,5 +49,25 @@ enum Method: string
     public static function values(): array
     {
         return array_column(self::cases(), 'value');
+    }
+
+    /**
+     * @throws MethodNotAllowedException
+     */
+    public static function fromString(string $value): self
+    {
+        return match ($value) {
+            'GET'     => self::GET,
+            'HEAD'    => self::HEAD,
+            'POST'    => self::POST,
+            'PUT'     => self::PUT,
+            'DELETE'  => self::DELETE,
+            'CONNECT' => self::CONNECT,
+            'OPTIONS' => self::OPTIONS,
+            'TRACE'   => self::TRACE,
+            'PATCH'   => self::PATCH,
+            '*'       => self::ALL,
+            default   => throw new MethodNotAllowedException($value),
+        };
     }
 }

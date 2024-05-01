@@ -25,25 +25,12 @@
 
 declare(strict_types=1);
 
-namespace Archict\Router;
+namespace Archict\Router\Exception;
 
-use GuzzleHttp\Psr7\ServerRequest;
-use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ServerRequestInterface;
-
-class RouteCollectorEventTest extends TestCase
+final class UnclosedGroupRoutePatternException extends RouterException
 {
-    public function testItCanCollect(): void
+    public function __construct()
     {
-        $collector = new RouteCollectorEvent();
-        $collector->addRoute(Method::ALL, '/hello-world', static fn(ServerRequestInterface $request) => 'Hello World!'); // phpcs:ignore
-        $routes = $collector->getCollectedRoutes();
-
-        self::assertCount(1, $routes);
-        $route = $routes[0];
-        self::assertSame(Method::ALL, $route['method']);
-        self::assertSame('/hello-world', $route['route']);
-        self::assertIsCallable($route['handler']);
-        self::assertSame('Hello World!', $route['handler'](ServerRequest::fromGlobals()));
+        parent::__construct('Your route is malformed, it has a unclosed group');
     }
 }

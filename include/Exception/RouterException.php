@@ -25,25 +25,10 @@
 
 declare(strict_types=1);
 
-namespace Archict\Router;
+namespace Archict\Router\Exception;
 
-use GuzzleHttp\Psr7\ServerRequest;
-use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ServerRequestInterface;
+use Exception;
 
-class RouteCollectorEventTest extends TestCase
+abstract class RouterException extends Exception
 {
-    public function testItCanCollect(): void
-    {
-        $collector = new RouteCollectorEvent();
-        $collector->addRoute(Method::ALL, '/hello-world', static fn(ServerRequestInterface $request) => 'Hello World!'); // phpcs:ignore
-        $routes = $collector->getCollectedRoutes();
-
-        self::assertCount(1, $routes);
-        $route = $routes[0];
-        self::assertSame(Method::ALL, $route['method']);
-        self::assertSame('/hello-world', $route['route']);
-        self::assertIsCallable($route['handler']);
-        self::assertSame('Hello World!', $route['handler'](ServerRequest::fromGlobals()));
-    }
 }

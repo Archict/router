@@ -25,25 +25,14 @@
 
 declare(strict_types=1);
 
-namespace Archict\Router;
+namespace Archict\Router\Exception;
 
-use GuzzleHttp\Psr7\ServerRequest;
-use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ServerRequestInterface;
+use Archict\Router\Method;
 
-class RouteCollectorEventTest extends TestCase
+final class FailedToCreateRouteException extends RouterException
 {
-    public function testItCanCollect(): void
+    public function __construct(Method $method, string $route)
     {
-        $collector = new RouteCollectorEvent();
-        $collector->addRoute(Method::ALL, '/hello-world', static fn(ServerRequestInterface $request) => 'Hello World!'); // phpcs:ignore
-        $routes = $collector->getCollectedRoutes();
-
-        self::assertCount(1, $routes);
-        $route = $routes[0];
-        self::assertSame(Method::ALL, $route['method']);
-        self::assertSame('/hello-world', $route['route']);
-        self::assertIsCallable($route['handler']);
-        self::assertSame('Hello World!', $route['handler'](ServerRequest::fromGlobals()));
+        parent::__construct("Failed to create route {$method->value} $route");
     }
 }
