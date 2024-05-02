@@ -67,4 +67,24 @@ final readonly class ResponseFactory
     {
         return new self($this->response->withBody($this->factory->createStream($body)), $this->factory);
     }
+
+    /**
+     * Response with JSON format
+     */
+    public function json(string $json): self
+    {
+        return $this
+            ->withHeader('Content-Type', 'application/json')
+            ->withBody($json);
+    }
+
+    /**
+     * Response with XML format
+     */
+    public function xml(string $xml): self
+    {
+        return $this
+            ->withHeader('Content-Type', 'application/xml')
+            ->withBody($xml);
+    }
 }

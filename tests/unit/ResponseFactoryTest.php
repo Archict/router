@@ -77,4 +77,22 @@ class ResponseFactoryTest extends TestCase
             $response->getHeaders()
         );
     }
+
+    public function testShortcutJSON(): void
+    {
+        $response = ResponseFactory::build()->json('{"hello":"world"}')->get();
+
+        self::assertTrue($response->hasHeader('Content-Type'));
+        self::assertSame(['application/json'], $response->getHeader('Content-Type'));
+        self::assertSame('{"hello":"world"}', $response->getBody()->getContents());
+    }
+
+    public function testShortcutXML(): void
+    {
+        $response = ResponseFactory::build()->xml('<?xml version="1.0" encoding="utf8" ?>')->get();
+
+        self::assertTrue($response->hasHeader('Content-Type'));
+        self::assertSame(['application/xml'], $response->getHeader('Content-Type'));
+        self::assertSame('<?xml version="1.0" encoding="utf8" ?>', $response->getBody()->getContents());
+    }
 }

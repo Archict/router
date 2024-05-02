@@ -29,6 +29,9 @@ namespace Archict\Router\HTTP;
 
 use Psr\Http\Message\ResponseInterface;
 
+/**
+ * @internal
+ */
 final class ResponseHandler
 {
     public function writeResponse(ResponseInterface $response): void
