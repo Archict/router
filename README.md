@@ -82,7 +82,7 @@ You can also have an optional suffix to your route with `[/suffix]`.
 
 Here is an example: `/article/{id:\d+}[/{title}]`.
 
-If something went wrong along your process, you can throw an exception built with `RouterExceptionFactory`. The
+If something went wrong along your process, you can throw an exception built with `HTTPExceptionFactory`. The
 exception will be caught by the router and used to build a response.
 
 ### ... with a middleware
