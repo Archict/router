@@ -27,10 +27,10 @@ declare(strict_types=1);
 
 namespace Archict\Router\Exception;
 
-final class MethodNotAllowedException extends RouterException
+final class MethodNotExistsException extends RouterException
 {
     public function __construct(string $method)
     {
-        parent::__construct("HTTP method '$method' is not allowed");
+        parent::__construct("HTTP method '$method' not exists");
     }
 }

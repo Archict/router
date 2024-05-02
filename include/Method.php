@@ -27,7 +27,7 @@ declare(strict_types=1);
 
 namespace Archict\Router;
 
-use Archict\Router\Exception\MethodNotAllowedException;
+use Archict\Router\Exception\MethodNotExistsException;
 
 enum Method: string
 {
@@ -52,7 +52,7 @@ enum Method: string
     }
 
     /**
-     * @throws MethodNotAllowedException
+     * @throws MethodNotExistsException
      */
     public static function fromString(string $value): self
     {
@@ -67,7 +67,7 @@ enum Method: string
             'TRACE'   => self::TRACE,
             'PATCH'   => self::PATCH,
             '*'       => self::ALL,
-            default   => throw new MethodNotAllowedException($value),
+            default   => throw new MethodNotExistsException($value),
         };
     }
 }

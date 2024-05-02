@@ -27,11 +27,14 @@ declare(strict_types=1);
 
 namespace Archict\Router\Route;
 
+use Archict\Router\Exception\HTTP\MethodNotAllowedException;
+use Archict\Router\Exception\HTTP\NotFoundException;
 use Archict\Router\Exception\RouterException;
 use Archict\Router\Method;
 use Archict\Router\RequestHandler;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use function Psl\Str\uppercase;
 
 /**
  * @internal
@@ -66,6 +69,31 @@ final class RouteCollection
         );
 
         return true;
+    }
+
+    /**
+     * @throws NotFoundException
+     * @throws MethodNotAllowedException
+     */
+    public function getMatchingRoute(string $uri, string $method): RouteInformation
+    {
+        $have_found_route_but_method = false;
+        foreach ($this->routes as $route => $informations) {
+            if (preg_match($route, $uri)) {
+                $have_found_route_but_method = true;
+                foreach ($informations as $route_information) {
+                    if ($route_information->method === Method::ALL || $route_information->method->value === uppercase($method)) {
+                        return $route_information;
+                    }
+                }
+            }
+        }
+
+        if ($have_found_route_but_method) {
+            throw new MethodNotAllowedException($method, $uri);
+        } else {
+            throw new NotFoundException($uri);
+        }
     }
 
     private function hasRoute(Method $method, string $route_regex): bool

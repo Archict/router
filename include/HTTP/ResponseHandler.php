@@ -25,24 +25,38 @@
 
 declare(strict_types=1);
 
-namespace Archict\Router\Route;
+namespace Archict\Router\HTTP;
 
-use Archict\Router\Method;
-use Archict\Router\RequestHandler;
+use Psr\Http\Message\ResponseInterface;
 
-/**
- * @internal
- */
-final readonly class RouteInformation
+final class ResponseHandler
 {
-    /**
-     * @param non-empty-string $route_regex
-     */
-    public function __construct(
-        public Method $method,
-        public string $route,
-        public string $route_regex,
-        public RequestHandler $handler,
-    ) {
+    public function writeResponse(ResponseInterface $response): void
+    {
+        $this->writeStatus($response);
+        $this->writeHeaders($response);
+        $this->writeBody($response);
+    }
+
+    private function writeHeaders(ResponseInterface $response): void
+    {
+        foreach ($response->getHeaders() as $name => $values) {
+            foreach ($values as $value) {
+                header(sprintf('%s: %s', $name, $value), false);
+            }
+        }
+    }
+
+    private function writeStatus(ResponseInterface $response): void
+    {
+        $version = $response->getProtocolVersion();
+        $code    = $response->getStatusCode();
+        $reason  = $response->getReasonPhrase();
+        header("HTTP/$version $code $reason");
+    }
+
+    private function writeBody(ResponseInterface $response): void
+    {
+        echo $response->getBody()->getContents();
     }
 }

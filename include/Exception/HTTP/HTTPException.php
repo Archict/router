@@ -25,24 +25,22 @@
 
 declare(strict_types=1);
 
-namespace Archict\Router\Route;
+namespace Archict\Router\Exception\HTTP;
 
-use Archict\Router\Method;
-use Archict\Router\RequestHandler;
+use Archict\Router\Exception\RouterException;
+use GuzzleHttp\Psr7\HttpFactory;
+use Psr\Http\Message\ResponseInterface;
+use Throwable;
 
-/**
- * @internal
- */
-final readonly class RouteInformation
+abstract class HTTPException extends RouterException
 {
-    /**
-     * @param non-empty-string $route_regex
-     */
-    public function __construct(
-        public Method $method,
-        public string $route,
-        public string $route_regex,
-        public RequestHandler $handler,
-    ) {
+    protected readonly HttpFactory $factory;
+
+    public function __construct(string $message = "", int $code = 0, ?Throwable $previous = null)
+    {
+        parent::__construct($message, $code, $previous);
+        $this->factory = new HttpFactory();
     }
+
+    abstract public function toResponse(): ResponseInterface;
 }

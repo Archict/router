@@ -7,13 +7,18 @@ namespace Archict\Router;
 use Archict\Brick\Service;
 use Archict\Core\Event\EventDispatcher;
 use Archict\Router\Exception\FailedToCreateRouteException;
+use Archict\Router\Exception\HTTP\HTTPException;
 use Archict\Router\Exception\RouterException;
+use Archict\Router\HTTP\ResponseHandler;
 use Archict\Router\Route\RouteCollection;
 use CuyZ\Valinor\Mapper\MappingError;
 use CuyZ\Valinor\Mapper\TreeMapper;
 use CuyZ\Valinor\MapperBuilder;
 use CuyZ\Valinor\Normalizer\Format;
 use CuyZ\Valinor\Normalizer\Normalizer;
+use GuzzleHttp\Psr7\HttpFactory;
+use GuzzleHttp\Psr7\ServerRequest;
+use Psr\Http\Message\ResponseInterface;
 use Psr\SimpleCache\CacheInterface;
 use Psr\SimpleCache\InvalidArgumentException;
 
@@ -40,7 +45,33 @@ final class Router
     public function route(): void
     {
         $this->loadRoutes();
-        // TODO: get current uri, and route it to handler
+
+        $factory = new HttpFactory();
+        try {
+            $request = ServerRequest::fromGlobals();
+            $path    = $request->getUri()->getPath();
+            $route   = $this->route_collection->getMatchingRoute($path, $request->getMethod());
+
+            $attributes = [];
+            assert(preg_match($route->route_regex, $path, $attributes) === 1);
+            foreach ($attributes as $key => $value) {
+                // preg_match array result should have int key for 'normal' groups and string key for named groups
+                if (is_string($key)) {
+                    $request = $request->withAttribute($key, $value);
+                }
+            }
+
+            $response = $route->handler->handle($request);
+            if (is_string($response)) {
+                $response = $factory->createResponse()->withBody($factory->createStream($response));
+            }
+        } catch (HTTPException $exception) {
+            $response = $exception->toResponse();
+        }
+
+        assert($response instanceof ResponseInterface);
+        $response_handler = new ResponseHandler();
+        $response_handler->writeResponse($response);
     }
 
     /**

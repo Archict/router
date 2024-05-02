@@ -27,6 +27,8 @@ declare(strict_types=1);
 
 namespace Archict\Router\Route;
 
+use Archict\Router\Exception\HTTP\MethodNotAllowedException;
+use Archict\Router\Exception\HTTP\NotFoundException;
 use Archict\Router\Method;
 use Archict\Router\RequestHandler;
 use Archict\Router\ResponseFactory;
@@ -128,5 +130,40 @@ final class RouteCollectionTest extends TestCase
         self::assertTrue(
             $collection->addRoute(Method::ALL, '{group:\a+}', static fn(ServerRequestInterface $request) => ResponseFactory::build()->get()) // phpcs:ignore
         );
+    }
+
+    public function testItThrowIfRouteNotFound(): void
+    {
+        $collection = new RouteCollection();
+        self::expectException(NotFoundException::class);
+        $collection->getMatchingRoute('', 'GET');
+    }
+
+    public function testItThrowIfMethodNotAllowed(): void
+    {
+        $collection = new RouteCollection();
+        $collection->addRoute(Method::GET, 'route', static fn(ServerRequestInterface $request) => ResponseFactory::build()->get()); // phpcs:ignore
+        self::expectException(MethodNotAllowedException::class);
+        $collection->getMatchingRoute('route', 'POST');
+    }
+
+    public function testItCanFindMatchingRouteSimple(): void
+    {
+        $collection = new RouteCollection();
+        $collection->addRoute(Method::ALL, 'route', static fn(ServerRequestInterface $request) => ResponseFactory::build()->get()); // phpcs:ignore
+        $route = $collection->getMatchingRoute('route', 'PATCH');
+
+        self::assertSame(Method::ALL, $route->method);
+        self::assertSame('route', $route->route);
+    }
+
+    public function testItCanFindMatchingRouteWithGroup(): void
+    {
+        $collection = new RouteCollection();
+        $collection->addRoute(Method::GET, 'article/{id:\d+}', static fn(ServerRequestInterface $request) => ResponseFactory::build()->get()); // phpcs:ignore
+        $route = $collection->getMatchingRoute('article/5', 'GET');
+
+        self::assertSame(Method::GET, $route->method);
+        self::assertSame('article/{id:\d+}', $route->route);
     }
 }

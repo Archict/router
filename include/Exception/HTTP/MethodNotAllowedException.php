@@ -25,24 +25,21 @@
 
 declare(strict_types=1);
 
-namespace Archict\Router\Route;
+namespace Archict\Router\Exception\HTTP;
 
-use Archict\Router\Method;
-use Archict\Router\RequestHandler;
+use Psr\Http\Message\ResponseInterface;
 
-/**
- * @internal
- */
-final readonly class RouteInformation
+final class MethodNotAllowedException extends HTTPException
 {
-    /**
-     * @param non-empty-string $route_regex
-     */
     public function __construct(
-        public Method $method,
-        public string $route,
-        public string $route_regex,
-        public RequestHandler $handler,
+        public readonly string $method,
+        public readonly string $uri,
     ) {
+        parent::__construct("Method '$this->method' not allowed for uri '$this->uri'");
+    }
+
+    public function toResponse(): ResponseInterface
+    {
+        return $this->factory->createResponse(405);
     }
 }
