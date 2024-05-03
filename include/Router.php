@@ -9,7 +9,6 @@ use Archict\Core\Event\EventDispatcher;
 use Archict\Router\Exception\FailedToCreateRouteException;
 use Archict\Router\Exception\HTTP\HTTPException;
 use Archict\Router\Exception\RouterException;
-use Archict\Router\HTTP\ResponseHandler;
 use Archict\Router\Route\RouteCollection;
 use CuyZ\Valinor\Mapper\MappingError;
 use CuyZ\Valinor\Mapper\TreeMapper;
@@ -17,8 +16,8 @@ use CuyZ\Valinor\MapperBuilder;
 use CuyZ\Valinor\Normalizer\Format;
 use CuyZ\Valinor\Normalizer\Normalizer;
 use GuzzleHttp\Psr7\HttpFactory;
-use GuzzleHttp\Psr7\ServerRequest;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\SimpleCache\CacheInterface;
 use Psr\SimpleCache\InvalidArgumentException;
 
@@ -42,15 +41,14 @@ final class Router
      * @throws RouterException
      * @throws InvalidArgumentException
      */
-    public function route(): void
+    public function route(ServerRequestInterface $request): ResponseInterface
     {
         $this->loadRoutes();
 
         $factory = new HttpFactory();
         try {
-            $request = ServerRequest::fromGlobals();
-            $path    = $request->getUri()->getPath();
-            $route   = $this->route_collection->getMatchingRoute($path, $request->getMethod());
+            $path  = $request->getUri()->getPath();
+            $route = $this->route_collection->getMatchingRoute($path, $request->getMethod());
 
             $attributes = [];
             assert(preg_match($route->route_regex, $path, $attributes) === 1);
@@ -69,9 +67,7 @@ final class Router
             $response = $exception->toResponse();
         }
 
-        assert($response instanceof ResponseInterface);
-        $response_handler = new ResponseHandler();
-        $response_handler->writeResponse($response);
+        return $response;
     }
 
     /**

@@ -6,17 +6,23 @@ namespace Archict\Router;
 
 use Archict\Core\Core;
 use Archict\Core\Services\ServiceManager;
+use GuzzleHttp\Psr7\ServerRequest;
 use PHPUnit\Framework\TestCase;
 
 final class RouterTest extends TestCase
 {
     private ServiceManager $service_manager;
+    private Router $router;
 
     protected function setUp(): void
     {
         $core = Core::build();
         $core->load();
         $this->service_manager = $core->service_manager;
+
+        $router = $this->service_manager->get(Router::class);
+        self::assertNotNull($router);
+        $this->router = $router;
     }
 
     public function testRouterIsLoaded(): void
@@ -25,10 +31,9 @@ final class RouterTest extends TestCase
         self::assertInstanceOf(Router::class, $this->service_manager->get(Router::class));
     }
 
-    public function testItNotThrow(): void
+    public function testItReturns404(): void
     {
-        $router = $this->service_manager->get(Router::class);
-        self::assertNotNull($router);
-        $router->route();
+        $response = $this->router->route(new ServerRequest('GET', 'route'));
+        self::assertSame(404, $response->getStatusCode());
     }
 }
