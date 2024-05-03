@@ -14,7 +14,8 @@
         "guzzlehttp/psr7": "^2.6",
         "psr/http-message": "^2.0",
         "archict/core": "^0.2",
-        "cuyz/valinor": "^1.12"
+        "cuyz/valinor": "^1.12",
+        "ext-simplexml": "*"
     },
     "autoload-dev": {
         "psr-4": {

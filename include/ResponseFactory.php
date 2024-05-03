@@ -29,6 +29,8 @@ namespace Archict\Router;
 
 use GuzzleHttp\Psr7\HttpFactory;
 use Psr\Http\Message\ResponseInterface;
+use SimpleXMLElement;
+use function Psl\Json\encode as psl_json_encode;
 
 final readonly class ResponseFactory
 {
@@ -71,20 +73,20 @@ final readonly class ResponseFactory
     /**
      * Response with JSON format
      */
-    public function json(string $json): self
+    public function json(string|array $json): self // @phpstan-ignore-line
     {
         return $this
             ->withHeader('Content-Type', 'application/json')
-            ->withBody($json);
+            ->withBody(is_string($json) ? $json : psl_json_encode($json));
     }
 
     /**
      * Response with XML format
      */
-    public function xml(string $xml): self
+    public function xml(string|SimpleXMLElement $xml): self
     {
         return $this
             ->withHeader('Content-Type', 'application/xml')
-            ->withBody($xml);
+            ->withBody(is_string($xml) ? $xml : (string) $xml->asXML());
     }
 }

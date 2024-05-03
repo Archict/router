@@ -28,6 +28,7 @@ declare(strict_types=1);
 namespace Archict\Router;
 
 use PHPUnit\Framework\TestCase;
+use SimpleXMLElement;
 
 class ResponseFactoryTest extends TestCase
 {
@@ -80,7 +81,7 @@ class ResponseFactoryTest extends TestCase
 
     public function testShortcutJSON(): void
     {
-        $response = ResponseFactory::build()->json('{"hello":"world"}')->get();
+        $response = ResponseFactory::build()->json(['hello' => 'world'])->get();
 
         self::assertTrue($response->hasHeader('Content-Type'));
         self::assertSame(['application/json'], $response->getHeader('Content-Type'));
@@ -89,10 +90,11 @@ class ResponseFactoryTest extends TestCase
 
     public function testShortcutXML(): void
     {
-        $response = ResponseFactory::build()->xml('<?xml version="1.0" encoding="utf8" ?>')->get();
+        $xml      = new SimpleXMLElement('<a></a>');
+        $response = ResponseFactory::build()->xml($xml)->get();
 
         self::assertTrue($response->hasHeader('Content-Type'));
         self::assertSame(['application/xml'], $response->getHeader('Content-Type'));
-        self::assertSame('<?xml version="1.0" encoding="utf8" ?>', $response->getBody()->getContents());
+        self::assertSame($xml->asXML(), $response->getBody()->getContents());
     }
 }
