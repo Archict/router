@@ -11,6 +11,7 @@
         <PropertyNotSetInConstructor>
             <errorLevel type="suppress">
                 <directory name="tests"/>
+                <file name="include/Router.php"/>
             </errorLevel>
         </PropertyNotSetInConstructor>
     </issueHandlers>

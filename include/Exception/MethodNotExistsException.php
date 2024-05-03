@@ -25,12 +25,12 @@
 
 declare(strict_types=1);
 
-namespace Archict\Router;
+namespace Archict\Router\Exception;
 
-final class MyEvent
+final class MethodNotExistsException extends RouterException
 {
-    public function __construct(
-        public bool $has_been_called,
-    ) {
+    public function __construct(string $method)
+    {
+        parent::__construct("HTTP method '$method' not exists");
     }
 }

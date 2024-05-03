@@ -10,7 +10,12 @@
     },
     "require": {
         "php": ">= 8.2",
-        "archict/brick": "^0"
+        "archict/brick": "^0",
+        "guzzlehttp/psr7": "^2.6",
+        "psr/http-message": "^2.0",
+        "archict/core": "^0.2",
+        "cuyz/valinor": "^1.12",
+        "ext-simplexml": "*"
     },
     "autoload-dev": {
         "psr-4": {
@@ -22,8 +27,7 @@
         "vimeo/psalm": "^5.22",
         "phpunit/phpunit": "^10",
         "squizlabs/php_codesniffer": "^3.9",
-        "slevomat/coding-standard": "^8.15",
-        "archict/core": "^0"
+        "slevomat/coding-standard": "^8.15"
     },
     "scripts": {
         "unit-test": "phpunit --testsuite unit",

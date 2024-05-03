@@ -3,3 +3,4 @@ parameters:
   paths:
     - include
     - tests
+  checkGenericClassInNonGenericObjectType: false
