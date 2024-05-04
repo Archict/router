@@ -40,6 +40,14 @@ final class RouteCollectorEvent
      * }>
      */
     private array $routes = [];
+    /**
+     * @var array<array{
+     *     method: Method|non-empty-string,
+     *     route: string,
+     *     handler: Middleware|callable(ServerRequestInterface): ServerRequestInterface
+     * }>
+     */
+    private array $middlewares = [];
 
     /**
      * @param Method|non-empty-string $method
@@ -64,5 +72,30 @@ final class RouteCollectorEvent
     public function getCollectedRoutes(): array
     {
         return $this->routes;
+    }
+
+    /**
+     * @param Method|non-empty-string $method
+     * @param Middleware|callable(ServerRequestInterface): ServerRequestInterface $handler
+     */
+    public function addMiddleware(Method|string $method, string $route, Middleware|callable $handler): void
+    {
+        $this->middlewares[] = [
+            'method'  => $method,
+            'route'   => $route,
+            'handler' => $handler,
+        ];
+    }
+
+    /**
+     * @return array<array{
+     *      method: Method|non-empty-string,
+     *      route: string,
+     *      handler: Middleware|callable(ServerRequestInterface): ServerRequestInterface
+     *  }>
+     */
+    public function getCollectedMiddlewares(): array
+    {
+        return $this->middlewares;
     }
 }

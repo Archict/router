@@ -19,7 +19,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Archict\\Router\\": "tests/unit"
+            "Archict\\Router\\": ["tests/unit", "tests/lib"]
         }
     },
     "require-dev": {
