@@ -98,7 +98,6 @@ final class Router
 
         $collector        = $this->event_dispatcher->dispatch(new RouteCollectorEvent());
         $collected_routes = $collector->getCollectedRoutes();
-
         foreach ($collected_routes as $collected_route) {
             $method  = $collected_route['method'];
             $route   = $collected_route['route'];
@@ -110,6 +109,18 @@ final class Router
             if (!$this->route_collection->addRoute($method, $route, $handler)) {
                 throw new FailedToCreateRouteException($method, $route);
             }
+        }
+
+        $collected_middlewares = $collector->getCollectedMiddlewares();
+        foreach ($collected_middlewares as $collected_middleware) {
+            $method  = $collected_middleware['method'];
+            $route   = $collected_middleware['route'];
+            $handler = $collected_middleware['handler'];
+            if (is_string($method)) {
+                $method = Method::fromString($method);
+            }
+
+            $this->route_collection->addMiddleware($method, $route, $handler);
         }
 
         $cache_value = $this->normalizer->normalize($this->route_collection);

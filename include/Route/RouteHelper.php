@@ -28,6 +28,7 @@ declare(strict_types=1);
 namespace Archict\Router\Route;
 
 use Archict\Router\Exception\RouterException;
+use Archict\Router\Middleware;
 use Archict\Router\RequestHandler;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -56,6 +57,24 @@ final class RouteHelper
     }
 
     /**
+     * Regex will be of form '{pattern}'
+     *
+     * @return non-empty-string
+     * @throws RouterException
+     */
+    public static function routeToMiddlewareRegex(string $route, bool $named_group = true): string
+    {
+        if ($route === '*') {
+            return '{^.*$}';
+        }
+
+        $route  = ltrim($route, '/');
+        $parser = new RouteParser($named_group);
+
+        return $parser->parse(mb_str_split($route));
+    }
+
+    /**
      * @param callable(ServerRequestInterface): (ResponseInterface|string) $handler_function
      */
     public static function callableToRequestHandler(callable $handler_function): RequestHandler
@@ -73,6 +92,30 @@ final class RouteHelper
             }
 
             public function handle(ServerRequestInterface $request): ResponseInterface|string
+            {
+                return $this->handler[0]($request);
+            }
+        };
+    }
+
+    /**
+     * @param callable(ServerRequestInterface): ServerRequestInterface $handler_function
+     */
+    public static function callableToMiddleware(callable $handler_function): Middleware
+    {
+        return new class($handler_function) implements Middleware {
+            /**
+             * Class cannot have a callable as property (php82)
+             * @var non-empty-array<callable(ServerRequestInterface): ServerRequestInterface>
+             */
+            private readonly array $handler;
+
+            public function __construct(callable $handler)
+            {
+                $this->handler = [$handler];
+            }
+
+            public function process(ServerRequestInterface $request): ServerRequestInterface
             {
                 return $this->handler[0]($request);
             }
