@@ -9,7 +9,9 @@ use Archict\Core\Event\EventDispatcher;
 use Archict\Router\Exception\FailedToCreateRouteException;
 use Archict\Router\Exception\HTTP\HTTPException;
 use Archict\Router\Exception\RouterException;
+use Archict\Router\Route\MiddlewareInformation;
 use Archict\Router\Route\RouteCollection;
+use Archict\Router\Route\RouteInformation;
 use CuyZ\Valinor\Mapper\MappingError;
 use CuyZ\Valinor\Mapper\TreeMapper;
 use CuyZ\Valinor\MapperBuilder;
@@ -45,26 +47,54 @@ final class Router
     {
         $this->loadRoutes();
 
-        $factory = new HttpFactory();
         try {
-            $path  = $request->getUri()->getPath();
-            $route = $this->route_collection->getMatchingRoute($path, $request->getMethod());
+            $path        = $request->getUri()->getPath();
+            $route       = $this->route_collection->getMatchingRoute($path, $request->getMethod());
+            $middlewares = $this->route_collection->getMatchingMiddlewares($path, $request->getMethod());
 
-            $attributes = [];
-            assert(preg_match($route->route_regex, $path, $attributes) === 1);
-            foreach ($attributes as $key => $value) {
-                // preg_match array result should have int key for 'normal' groups and string key for named groups
-                if (is_string($key)) {
-                    $request = $request->withAttribute($key, $value);
-                }
-            }
+            $request = array_reduce(
+                $middlewares,
+                fn(ServerRequestInterface $request, MiddlewareInformation $middleware) => $this->handleMiddleware($middleware, $request),
+                $request,
+            );
 
-            $response = $route->handler->handle($request);
-            if (is_string($response)) {
-                $response = $factory->createResponse()->withBody($factory->createStream($response));
-            }
+            $response = $this->handleRoute($route, $request);
         } catch (HTTPException $exception) {
             $response = $exception->toResponse();
+        }
+
+        return $response;
+    }
+
+    private function handleMiddleware(MiddlewareInformation $middleware, ServerRequestInterface $request): ServerRequestInterface
+    {
+        $attributes = [];
+        assert(preg_match($middleware->route_regex, $request->getUri()->getPath(), $attributes) === 1);
+        foreach ($attributes as $key => $value) {
+            // preg_match array result should have int key for 'normal' groups and string key for named groups
+            if (is_string($key)) {
+                $request = $request->withAttribute($key, $value);
+            }
+        }
+
+        return $middleware->handler->process($request);
+    }
+
+    private function handleRoute(RouteInformation $route, ServerRequestInterface $request): ResponseInterface
+    {
+        $factory    = new HttpFactory();
+        $attributes = [];
+        assert(preg_match($route->route_regex, $request->getUri()->getPath(), $attributes) === 1);
+        foreach ($attributes as $key => $value) {
+            // preg_match array result should have int key for 'normal' groups and string key for named groups
+            if (is_string($key)) {
+                $request = $request->withAttribute($key, $value);
+            }
+        }
+
+        $response = $route->handler->handle($request);
+        if (is_string($response)) {
+            $response = $factory->createResponse()->withBody($factory->createStream($response));
         }
 
         return $response;

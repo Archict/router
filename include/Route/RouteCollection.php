@@ -138,4 +138,26 @@ final class RouteCollection
             is_callable($handler) ? RouteHelper::callableToMiddleware($handler) : $handler,
         );
     }
+
+    /**
+     * @return MiddlewareInformation[]
+     */
+    public function getMatchingMiddlewares(string $uri, string $method): array
+    {
+        $results = [];
+
+        foreach ($this->middlewares as $route => $middlewares) {
+            if (preg_match($route, $uri)) {
+                foreach ($middlewares as $middlewares_informations) {
+                    foreach ($middlewares_informations as $middleware) {
+                        if ($middleware->method === Method::ALL || $middleware->method->value === $method) {
+                            $results[] = $middleware;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $results;
+    }
 }
