@@ -184,7 +184,7 @@ final class RouteHelperTest extends TestCase
     public function testItTransformCallableToMiddleware(): void
     {
         $request  = new ServerRequest('GET', 'route');
-        $callable = static fn(ServerRequestInterface $request) => $request;
+        $callable = static fn(ServerRequestInterface $request): ServerRequestInterface => $request;
         $handler  = RouteHelper::callableToMiddleware($callable);
 
         self::assertInstanceOf(Middleware::class, $handler);
