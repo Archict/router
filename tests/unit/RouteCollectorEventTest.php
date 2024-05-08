@@ -33,7 +33,7 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class RouteCollectorEventTest extends TestCase
 {
-    public function testItCanCollect(): void
+    public function testItCanCollectRoute(): void
     {
         $collector = new RouteCollectorEvent();
         $collector->addRoute(Method::ALL, '/hello-world', static fn(ServerRequestInterface $request) => 'Hello World!'); // phpcs:ignore
@@ -45,5 +45,20 @@ class RouteCollectorEventTest extends TestCase
         self::assertSame('/hello-world', $route['route']);
         self::assertIsCallable($route['handler']);
         self::assertSame('Hello World!', $route['handler'](ServerRequest::fromGlobals()));
+    }
+
+    public function testItCanCollectMiddleware(): void
+    {
+        $collector = new RouteCollectorEvent();
+        $collector->addMiddleware(Method::GET, '/hello-world', new IdentityMiddlewareStub());
+        $middlewares = $collector->getCollectedMiddlewares();
+
+        self::assertCount(1, $middlewares);
+        $middleware = $middlewares[0];
+        self::assertSame(Method::GET, $middleware['method']);
+        self::assertSame('/hello-world', $middleware['route']);
+        self::assertInstanceOf(Middleware::class, $middleware['handler']);
+        $request = new ServerRequest('GET', '/hello-world');
+        self::assertSame($request, $middleware['handler']->process($request));
     }
 }

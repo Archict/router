@@ -29,6 +29,7 @@ namespace Archict\Router\Route;
 
 use Archict\Router\Exception\HTTP\MethodNotAllowedException;
 use Archict\Router\Exception\HTTP\NotFoundException;
+use Archict\Router\IdentityMiddlewareStub;
 use Archict\Router\Method;
 use Archict\Router\RequestHandler;
 use Archict\Router\ResponseFactory;
@@ -165,5 +166,28 @@ final class RouteCollectionTest extends TestCase
 
         self::assertSame(Method::GET, $route->method);
         self::assertSame('article/{id:\d+}', $route->route);
+    }
+
+    public function testItCanAddMiddlewareWithCallable(): void
+    {
+        $collection = new RouteCollection();
+        self::expectNotToPerformAssertions();
+        $collection->addMiddleware(Method::GET, 'route', static fn(ServerRequestInterface $request) => $request);
+    }
+
+    public function testItCanAddMiddlewareWithMiddleware(): void
+    {
+        $collection = new RouteCollection();
+        self::expectNotToPerformAssertions();
+        $collection->addMiddleware(Method::GET, 'route', new IdentityMiddlewareStub());
+    }
+
+    public function testItAcceptMultipleMiddlewareOnSameRoute(): void
+    {
+        $collection = new RouteCollection();
+        self::expectNotToPerformAssertions();
+        $collection->addMiddleware(Method::GET, 'route', new IdentityMiddlewareStub());
+        $collection->addMiddleware(Method::GET, 'route', new IdentityMiddlewareStub());
+        $collection->addMiddleware(Method::GET, 'route', new IdentityMiddlewareStub());
     }
 }

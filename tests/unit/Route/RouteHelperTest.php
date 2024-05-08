@@ -30,6 +30,7 @@ namespace Archict\Router\Route;
 use Archict\Router\Exception\EmptyGroupNameException;
 use Archict\Router\Exception\RouterException;
 use Archict\Router\Exception\UnclosedGroupRoutePatternException;
+use Archict\Router\Middleware;
 use Archict\Router\RequestHandler;
 use Archict\Router\ResponseFactory;
 use GuzzleHttp\Psr7\ServerRequest;
@@ -170,7 +171,7 @@ final class RouteHelperTest extends TestCase
         self::assertSame('foo', $results['title']);
     }
 
-    public function testItTransformCallableToClass(): void
+    public function testItTransformCallableToRequestHandler(): void
     {
         $response = ResponseFactory::build()->withStatus(418)->get();
         $callable = static fn(ServerRequestInterface $request): ResponseInterface => $response; // phpcs:ignore
@@ -178,5 +179,20 @@ final class RouteHelperTest extends TestCase
 
         self::assertInstanceOf(RequestHandler::class, $handler);
         self::assertSame($response, $handler->handle(ServerRequest::fromGlobals()));
+    }
+
+    public function testItTransformCallableToMiddleware(): void
+    {
+        $request  = new ServerRequest('GET', 'route');
+        $callable = static fn(ServerRequestInterface $request): ServerRequestInterface => $request;
+        $handler  = RouteHelper::callableToMiddleware($callable);
+
+        self::assertInstanceOf(Middleware::class, $handler);
+        self::assertSame($request, $handler->process($request));
+    }
+
+    public function testItHasASpecialRuleForMiddlewareRegex(): void
+    {
+        self::assertSame('{^.*$}', RouteHelper::routeToMiddlewareRegex('*'));
     }
 }
