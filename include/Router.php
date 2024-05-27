@@ -9,6 +9,7 @@ use Archict\Core\Event\EventDispatcher;
 use Archict\Router\Exception\FailedToCreateRouteException;
 use Archict\Router\Exception\HTTP\HTTPException;
 use Archict\Router\Exception\RouterException;
+use Archict\Router\HTTP\FinalResponseHandler;
 use Archict\Router\Route\MiddlewareInformation;
 use Archict\Router\Route\RouteCollection;
 use Archict\Router\Route\RouteInformation;
@@ -18,10 +19,12 @@ use CuyZ\Valinor\MapperBuilder;
 use CuyZ\Valinor\Normalizer\Format;
 use CuyZ\Valinor\Normalizer\Normalizer;
 use GuzzleHttp\Psr7\HttpFactory;
+use LogicException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\SimpleCache\CacheInterface;
 use Psr\SimpleCache\InvalidArgumentException;
+use Throwable;
 
 #[Service]
 final class Router
@@ -30,6 +33,7 @@ final class Router
     private readonly TreeMapper $mapper;
     private readonly Normalizer $normalizer;
     private RouteCollection $route_collection;
+    private ?ResponseInterface $response;
 
     public function __construct(
         private readonly EventDispatcher $event_dispatcher,
@@ -43,7 +47,7 @@ final class Router
      * @throws RouterException
      * @throws InvalidArgumentException
      */
-    public function route(ServerRequestInterface $request): ResponseInterface
+    public function route(ServerRequestInterface $request): void
     {
         $this->loadRoutes();
 
@@ -58,12 +62,22 @@ final class Router
                 $request,
             );
 
-            $response = $this->handleRoute($route, $request);
+            $this->response = $this->handleRoute($route, $request);
         } catch (HTTPException $exception) {
-            $response = $exception->toResponse();
+            $this->response = $exception->toResponse();
+        } catch (Throwable $throwable) {
+            $this->response = HTTPExceptionFactory::ServerError($throwable->getMessage())->toResponse();
+        }
+    }
+
+    public function response(): void
+    {
+        if ($this->response === null) {
+            throw new LogicException('You should call Router::route() before');
         }
 
-        return $response;
+        $final_handler = new FinalResponseHandler();
+        $final_handler->writeResponse($this->response);
     }
 
     private function handleMiddleware(MiddlewareInformation $middleware, ServerRequestInterface $request): ServerRequestInterface
