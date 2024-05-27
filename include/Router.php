@@ -38,6 +38,7 @@ final class Router
     private readonly Normalizer $normalizer;
     private RouteCollection $route_collection;
     private ?ResponseInterface $response;
+    private ?ServerRequestInterface $request;
 
     /**
      * @throws HTTPCodeNotHandledException
@@ -61,18 +62,19 @@ final class Router
     {
         $this->loadRoutes();
 
+        $this->request = $request;
         try {
-            $path        = $request->getUri()->getPath();
-            $route       = $this->route_collection->getMatchingRoute($path, $request->getMethod());
-            $middlewares = $this->route_collection->getMatchingMiddlewares($path, $request->getMethod());
+            $path        = $this->request->getUri()->getPath();
+            $route       = $this->route_collection->getMatchingRoute($path, $this->request->getMethod());
+            $middlewares = $this->route_collection->getMatchingMiddlewares($path, $this->request->getMethod());
 
-            $request = array_reduce(
+            $this->request = array_reduce(
                 $middlewares,
-                fn(ServerRequestInterface $request, MiddlewareInformation $middleware) => $this->handleMiddleware($middleware, $request),
-                $request,
+                fn(ServerRequestInterface $mid_request, MiddlewareInformation $middleware) => $this->handleMiddleware($middleware, $mid_request),
+                $this->request,
             );
 
-            $this->response = $this->handleRoute($route, $request);
+            $this->response = $this->handleRoute($route, $this->request);
         } catch (HTTPException $exception) {
             $this->response = $exception->toResponse();
         } catch (Throwable $throwable) {
@@ -82,12 +84,26 @@ final class Router
 
     public function response(): void
     {
-        if ($this->response === null) {
+        if ($this->response === null || $this->request === null) {
             throw new LogicException('You should call Router::route() before');
         }
 
+        $response = $this->response;
+        $code     = $this->response->getStatusCode();
+        if (isset($this->configuration->error_handling[$code])) {
+            $handler = $this->configuration->error_handling[$code];
+            if (class_exists($handler)) {
+                $object = new $handler();
+                assert($object instanceof ResponseHandler);
+                $response = $object->handleResponse($response, $this->request);
+            } else {
+                $factory  = new HttpFactory();
+                $response = $response->withBody($factory->createStream($handler));
+            }
+        }
+
         $final_handler = new FinalResponseHandler();
-        $final_handler->writeResponse($this->response);
+        $final_handler->writeResponse($response);
     }
 
     private function handleMiddleware(MiddlewareInformation $middleware, ServerRequestInterface $request): ServerRequestInterface
