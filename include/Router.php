@@ -6,8 +6,12 @@ namespace Archict\Router;
 
 use Archict\Brick\Service;
 use Archict\Core\Event\EventDispatcher;
+use Archict\Router\Config\ConfigurationValidator;
+use Archict\Router\Config\RouterConfiguration;
+use Archict\Router\Exception\ErrorHandlerShouldImplementInterfaceException;
 use Archict\Router\Exception\FailedToCreateRouteException;
 use Archict\Router\Exception\HTTP\HTTPException;
+use Archict\Router\Exception\HTTPCodeNotHandledException;
 use Archict\Router\Exception\RouterException;
 use Archict\Router\HTTP\FinalResponseHandler;
 use Archict\Router\Route\MiddlewareInformation;
@@ -26,7 +30,7 @@ use Psr\SimpleCache\CacheInterface;
 use Psr\SimpleCache\InvalidArgumentException;
 use Throwable;
 
-#[Service]
+#[Service(RouterConfiguration::class, 'router.yml')]
 final class Router
 {
     private const CACHE_KEY = 'archict/router->route_collection';
@@ -35,12 +39,18 @@ final class Router
     private RouteCollection $route_collection;
     private ?ResponseInterface $response;
 
+    /**
+     * @throws HTTPCodeNotHandledException
+     * @throws ErrorHandlerShouldImplementInterfaceException
+     */
     public function __construct(
         private readonly EventDispatcher $event_dispatcher,
         private readonly CacheInterface $cache,
+        private readonly RouterConfiguration $configuration,
     ) {
         $this->mapper     = (new MapperBuilder())->allowPermissiveTypes()->mapper();
         $this->normalizer = (new MapperBuilder())->normalizer(Format::json());
+        (new ConfigurationValidator())->validate($this->configuration);
     }
 
     /**
