@@ -48,16 +48,16 @@
         },
         {
             "name": "archict/core",
-            "version": "v0.2.0",
+            "version": "v0.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Archict/core.git",
-                "reference": "ccbc5d5453c5d4ce07eb7e4772f656b9f680c91d"
+                "reference": "8c18791403f1596a5762753e89fa3c2d99ed5a1d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Archict/core/zipball/ccbc5d5453c5d4ce07eb7e4772f656b9f680c91d",
-                "reference": "ccbc5d5453c5d4ce07eb7e4772f656b9f680c91d",
+                "url": "https://api.github.com/repos/Archict/core/zipball/8c18791403f1596a5762753e89fa3c2d99ed5a1d",
+                "reference": "8c18791403f1596a5762753e89fa3c2d99ed5a1d",
                 "shasum": ""
             },
             "require": {
@@ -91,9 +91,9 @@
             "description": "Heart of Archict, this library load and manage Bricks",
             "support": {
                 "issues": "https://github.com/Archict/core/issues",
-                "source": "https://github.com/Archict/core/tree/v0.2.0"
+                "source": "https://github.com/Archict/core/tree/v0.2.1"
             },
-            "time": "2024-04-25T16:32:59+00:00"
+            "time": "2024-05-14T06:54:08+00:00"
         },
         {
             "name": "azjezz/psl",

@@ -6,9 +6,14 @@ namespace Archict\Router;
 
 use Archict\Brick\Service;
 use Archict\Core\Event\EventDispatcher;
+use Archict\Router\Config\ConfigurationValidator;
+use Archict\Router\Config\RouterConfiguration;
+use Archict\Router\Exception\ErrorHandlerShouldImplementInterfaceException;
 use Archict\Router\Exception\FailedToCreateRouteException;
 use Archict\Router\Exception\HTTP\HTTPException;
+use Archict\Router\Exception\HTTPCodeNotHandledException;
 use Archict\Router\Exception\RouterException;
+use Archict\Router\HTTP\FinalResponseHandler;
 use Archict\Router\Route\MiddlewareInformation;
 use Archict\Router\Route\RouteCollection;
 use Archict\Router\Route\RouteInformation;
@@ -18,52 +23,87 @@ use CuyZ\Valinor\MapperBuilder;
 use CuyZ\Valinor\Normalizer\Format;
 use CuyZ\Valinor\Normalizer\Normalizer;
 use GuzzleHttp\Psr7\HttpFactory;
+use LogicException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\SimpleCache\CacheInterface;
 use Psr\SimpleCache\InvalidArgumentException;
+use Throwable;
 
-#[Service]
+#[Service(RouterConfiguration::class, 'router.yml')]
 final class Router
 {
     private const CACHE_KEY = 'archict/router->route_collection';
     private readonly TreeMapper $mapper;
     private readonly Normalizer $normalizer;
     private RouteCollection $route_collection;
+    private ?ResponseInterface $response;
+    private ?ServerRequestInterface $request;
 
+    /**
+     * @throws HTTPCodeNotHandledException
+     * @throws ErrorHandlerShouldImplementInterfaceException
+     */
     public function __construct(
         private readonly EventDispatcher $event_dispatcher,
         private readonly CacheInterface $cache,
+        private readonly RouterConfiguration $configuration,
     ) {
         $this->mapper     = (new MapperBuilder())->allowPermissiveTypes()->mapper();
         $this->normalizer = (new MapperBuilder())->normalizer(Format::json());
+        (new ConfigurationValidator())->validate($this->configuration);
     }
 
     /**
      * @throws RouterException
      * @throws InvalidArgumentException
      */
-    public function route(ServerRequestInterface $request): ResponseInterface
+    public function route(ServerRequestInterface $request): void
     {
         $this->loadRoutes();
 
+        $this->request = $request;
         try {
-            $path        = $request->getUri()->getPath();
-            $route       = $this->route_collection->getMatchingRoute($path, $request->getMethod());
-            $middlewares = $this->route_collection->getMatchingMiddlewares($path, $request->getMethod());
+            $path        = $this->request->getUri()->getPath();
+            $route       = $this->route_collection->getMatchingRoute($path, $this->request->getMethod());
+            $middlewares = $this->route_collection->getMatchingMiddlewares($path, $this->request->getMethod());
 
-            $request = array_reduce(
+            $this->request = array_reduce(
                 $middlewares,
-                fn(ServerRequestInterface $request, MiddlewareInformation $middleware) => $this->handleMiddleware($middleware, $request),
-                $request,
+                fn(ServerRequestInterface $mid_request, MiddlewareInformation $middleware) => $this->handleMiddleware($middleware, $mid_request),
+                $this->request,
             );
 
-            $response = $this->handleRoute($route, $request);
+            $this->response = $this->handleRoute($route, $this->request);
         } catch (HTTPException $exception) {
-            $response = $exception->toResponse();
+            $this->response = $exception->toResponse();
+        } catch (Throwable $throwable) {
+            $this->response = HTTPExceptionFactory::ServerError($throwable->getMessage())->toResponse();
+        }
+    }
+
+    public function response(): void
+    {
+        if ($this->response === null || $this->request === null) {
+            throw new LogicException('You should call Router::route() before');
         }
 
-        return $response;
+        $response = $this->response;
+        $code     = $this->response->getStatusCode();
+        if (isset($this->configuration->error_handling[$code])) {
+            $handler = $this->configuration->error_handling[$code];
+            if (class_exists($handler)) {
+                $object = new $handler();
+                assert($object instanceof ResponseHandler);
+                $response = $object->handleResponse($response, $this->request);
+            } else {
+                $factory  = new HttpFactory();
+                $response = $response->withBody($factory->createStream($handler));
+            }
+        }
+
+        $final_handler = new FinalResponseHandler();
+        $final_handler->writeResponse($response);
     }
 
     private function handleMiddleware(MiddlewareInformation $middleware, ServerRequestInterface $request): ServerRequestInterface

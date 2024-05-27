@@ -130,3 +130,36 @@ class MyMiddleware implements Middleware
 
 You can do whatever you want in your middleware. If something went wrong, the procedure is the same as for
 RequestHandler.
+
+### Special response handling
+
+By special, we mean 404, 500, ... In short HTTP code different from 2XX. By default, Archict will use `ResponseHandler`
+which just set the corresponding headers. Via the config file of this Brick you change this behavior:
+
+```yaml
+error_handling:
+  404: \MyHandler
+  501: 'Oops! Something went wrong'
+```
+
+You have 2 choices:
+
+1. Pass a string, Archict will use it as response body
+2. Pass a class string of a class implementing interface `ResponseHandler`, Archict will call it. For example:
+
+```php
+<?php
+
+use Archict\Router\ResponseHandler;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+
+class MyHandler implements ResponseHandler
+{
+    public function handleResponse(ResponseInterface $response, ServerRequestInterface $request): ResponseInterface
+    {
+        $factory = new \GuzzleHttp\Psr7\HttpFactory();
+        return $response->withBody($factory->createStream("Page '{$request->getUri()->getPath()}' not found!"));
+    }
+}
+```

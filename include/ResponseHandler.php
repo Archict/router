@@ -25,38 +25,12 @@
 
 declare(strict_types=1);
 
-namespace Archict\Router\HTTP;
+namespace Archict\Router;
 
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
-final class ResponseHandler
+interface ResponseHandler
 {
-    public function writeResponse(ResponseInterface $response): void
-    {
-        $this->writeStatus($response);
-        $this->writeHeaders($response);
-        $this->writeBody($response);
-    }
-
-    private function writeHeaders(ResponseInterface $response): void
-    {
-        foreach ($response->getHeaders() as $name => $values) {
-            foreach ($values as $value) {
-                header(sprintf('%s: %s', $name, $value), false);
-            }
-        }
-    }
-
-    private function writeStatus(ResponseInterface $response): void
-    {
-        $version = $response->getProtocolVersion();
-        $code    = $response->getStatusCode();
-        $reason  = $response->getReasonPhrase();
-        header("HTTP/$version $code $reason");
-    }
-
-    private function writeBody(ResponseInterface $response): void
-    {
-        echo $response->getBody()->getContents();
-    }
+    public function handleResponse(ResponseInterface $response, ServerRequestInterface $request): ResponseInterface;
 }
