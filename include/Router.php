@@ -64,7 +64,7 @@ final class Router
 
         $this->request = $request;
         try {
-            $path        = $this->request->getUri()->getPath();
+            $path        = ltrim($this->request->getUri()->getPath(), '/');
             $route       = $this->route_collection->getMatchingRoute($path, $this->request->getMethod());
             $middlewares = $this->route_collection->getMatchingMiddlewares($path, $this->request->getMethod());
 
