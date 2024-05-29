@@ -17,25 +17,16 @@ use Archict\Router\HTTP\FinalResponseHandler;
 use Archict\Router\Route\MiddlewareInformation;
 use Archict\Router\Route\RouteCollection;
 use Archict\Router\Route\RouteInformation;
-use CuyZ\Valinor\Mapper\MappingError;
-use CuyZ\Valinor\Mapper\TreeMapper;
-use CuyZ\Valinor\MapperBuilder;
-use CuyZ\Valinor\Normalizer\Format;
-use CuyZ\Valinor\Normalizer\Normalizer;
 use GuzzleHttp\Psr7\HttpFactory;
 use LogicException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\SimpleCache\CacheInterface;
 use Psr\SimpleCache\InvalidArgumentException;
 use Throwable;
 
 #[Service(RouterConfiguration::class, 'router.yml')]
 final class Router
 {
-    private const CACHE_KEY = 'archict/router->route_collection';
-    private readonly TreeMapper $mapper;
-    private readonly Normalizer $normalizer;
     private RouteCollection $route_collection;
     private ?ResponseInterface $response;
     private ?ServerRequestInterface $request;
@@ -46,11 +37,8 @@ final class Router
      */
     public function __construct(
         private readonly EventDispatcher $event_dispatcher,
-        private readonly CacheInterface $cache,
         private readonly RouterConfiguration $configuration,
     ) {
-        $this->mapper     = (new MapperBuilder())->allowPermissiveTypes()->mapper();
-        $this->normalizer = (new MapperBuilder())->normalizer(Format::json());
         (new ConfigurationValidator())->validate($this->configuration);
     }
 
@@ -146,24 +134,6 @@ final class Router
      */
     private function loadRoutes(): void
     {
-        if ($this->cache->has(self::CACHE_KEY)) {
-            $cache_value = $this->cache->get(self::CACHE_KEY);
-            try {
-                $this->route_collection = $this->mapper->map(RouteCollection::class, $cache_value);
-            } catch (MappingError) {
-                $this->collectRoutes();
-            }
-        } else {
-            $this->collectRoutes();
-        }
-    }
-
-    /**
-     * @throws RouterException
-     * @throws InvalidArgumentException
-     */
-    private function collectRoutes(): void
-    {
         $this->route_collection = new RouteCollection();
 
         $collector        = $this->event_dispatcher->dispatch(new RouteCollectorEvent());
@@ -192,8 +162,5 @@ final class Router
 
             $this->route_collection->addMiddleware($method, $route, $handler);
         }
-
-        $cache_value = $this->normalizer->normalize($this->route_collection);
-        $this->cache->set(self::CACHE_KEY, $cache_value);
     }
 }
