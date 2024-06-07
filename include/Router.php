@@ -6,6 +6,7 @@ namespace Archict\Router;
 
 use Archict\Brick\Service;
 use Archict\Core\Event\EventDispatcher;
+use Archict\Core\Services\ServiceManager;
 use Archict\Router\Config\ConfigurationValidator;
 use Archict\Router\Config\RouterConfiguration;
 use Archict\Router\Exception\ErrorHandlerShouldImplementInterfaceException;
@@ -38,6 +39,7 @@ final class Router
     public function __construct(
         private readonly EventDispatcher $event_dispatcher,
         private readonly RouterConfiguration $configuration,
+        private readonly ServiceManager $service_manager,
     ) {
         (new ConfigurationValidator())->validate($this->configuration);
     }
@@ -81,7 +83,7 @@ final class Router
         if (isset($this->configuration->error_handling[$code])) {
             $handler = $this->configuration->error_handling[$code];
             if (class_exists($handler)) {
-                $object = new $handler();
+                $object = $this->service_manager->instantiateWithServices($handler);
                 assert($object instanceof ResponseHandler);
                 $response = $object->handleResponse($response, $this->request);
             } else {

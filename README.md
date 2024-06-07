@@ -163,3 +163,6 @@ class MyHandler implements ResponseHandler
     }
 }
 ```
+
+Your class can also have dependencies, as for a Service just add them to your constructor. These dependencies must be
+available Service.
