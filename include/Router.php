@@ -60,11 +60,11 @@ final class Router
 
             $this->request = array_reduce(
                 $middlewares,
-                fn(ServerRequestInterface $mid_request, MiddlewareInformation $middleware) => $this->handleMiddleware($middleware, $mid_request),
+                fn(ServerRequestInterface $mid_request, MiddlewareInformation $middleware) => $this->handleMiddleware($middleware, $path, $mid_request),
                 $this->request,
             );
 
-            $this->response = $this->handleRoute($route, $this->request);
+            $this->response = $this->handleRoute($route, $path, $this->request);
         } catch (HTTPException $exception) {
             $this->response = $exception->toResponse();
         } catch (Throwable $throwable) {
@@ -96,10 +96,10 @@ final class Router
         $final_handler->writeResponse($response);
     }
 
-    private function handleMiddleware(MiddlewareInformation $middleware, ServerRequestInterface $request): ServerRequestInterface
+    private function handleMiddleware(MiddlewareInformation $middleware, string $path, ServerRequestInterface $request): ServerRequestInterface
     {
         $attributes = [];
-        assert(preg_match($middleware->route_regex, $request->getUri()->getPath(), $attributes) === 1);
+        assert(preg_match($middleware->route_regex, $path, $attributes) === 1);
         foreach ($attributes as $key => $value) {
             // preg_match array result should have int key for 'normal' groups and string key for named groups
             if (is_string($key)) {
@@ -110,11 +110,11 @@ final class Router
         return $middleware->handler->process($request);
     }
 
-    private function handleRoute(RouteInformation $route, ServerRequestInterface $request): ResponseInterface
+    private function handleRoute(RouteInformation $route, string $path, ServerRequestInterface $request): ResponseInterface
     {
         $factory    = new HttpFactory();
         $attributes = [];
-        assert(preg_match($route->route_regex, $request->getUri()->getPath(), $attributes) === 1);
+        assert(preg_match($route->route_regex, $path, $attributes) === 1);
         foreach ($attributes as $key => $value) {
             // preg_match array result should have int key for 'normal' groups and string key for named groups
             if (is_string($key)) {
