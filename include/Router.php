@@ -99,7 +99,8 @@ final class Router
     private function handleMiddleware(MiddlewareInformation $middleware, string $path, ServerRequestInterface $request): ServerRequestInterface
     {
         $attributes = [];
-        assert(preg_match($middleware->route_regex, $path, $attributes) === 1);
+        $match      = preg_match($middleware->route_regex, $path, $attributes);
+        assert($match === 1);
         foreach ($attributes as $key => $value) {
             // preg_match array result should have int key for 'normal' groups and string key for named groups
             if (is_string($key)) {
@@ -114,7 +115,8 @@ final class Router
     {
         $factory    = new HttpFactory();
         $attributes = [];
-        assert(preg_match($route->route_regex, $path, $attributes) === 1);
+        $match      = preg_match($route->route_regex, $path, $attributes);
+        assert($match === 1);
         foreach ($attributes as $key => $value) {
             // preg_match array result should have int key for 'normal' groups and string key for named groups
             if (is_string($key)) {
