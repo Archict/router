@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "691cfb7c1d4c8a4d4b1b35abc80aaf08",
+    "content-hash": "d4cf77ad775f8d0599754284fdef43a5",
     "packages": [
         {
             "name": "archict/brick",
-            "version": "v0.2.0",
+            "version": "v1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Archict/brick.git",
-                "reference": "442e7230807bd55f1cd0ef8abf1b36272967ec77"
+                "reference": "7fae635f9af442cf3c1a78494cb7cc7436cd5764"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Archict/brick/zipball/442e7230807bd55f1cd0ef8abf1b36272967ec77",
-                "reference": "442e7230807bd55f1cd0ef8abf1b36272967ec77",
+                "url": "https://api.github.com/repos/Archict/brick/zipball/7fae635f9af442cf3c1a78494cb7cc7436cd5764",
+                "reference": "7fae635f9af442cf3c1a78494cb7cc7436cd5764",
                 "shasum": ""
             },
             "require": {
@@ -42,26 +42,26 @@
             "description": "Base library for Archict framework",
             "support": {
                 "issues": "https://github.com/Archict/brick/issues",
-                "source": "https://github.com/Archict/brick/tree/v0.2.0"
+                "source": "https://github.com/Archict/brick/tree/v1.0.0"
             },
-            "time": "2024-04-18T16:07:42+00:00"
+            "time": "2024-07-10T15:56:56+00:00"
         },
         {
             "name": "archict/core",
-            "version": "v0.3.1",
+            "version": "v1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Archict/core.git",
-                "reference": "6a7ab537c43df994de363c4622b25ef541ab7b82"
+                "reference": "bdaa4cb313cb5985e9bd64aba1e5cd066ba8b95d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Archict/core/zipball/6a7ab537c43df994de363c4622b25ef541ab7b82",
-                "reference": "6a7ab537c43df994de363c4622b25ef541ab7b82",
+                "url": "https://api.github.com/repos/Archict/core/zipball/bdaa4cb313cb5985e9bd64aba1e5cd066ba8b95d",
+                "reference": "bdaa4cb313cb5985e9bd64aba1e5cd066ba8b95d",
                 "shasum": ""
             },
             "require": {
-                "archict/brick": "^0",
+                "archict/brick": "^1.0",
                 "azjezz/psl": "^2.9",
                 "composer-runtime-api": "^2.2",
                 "composer/class-map-generator": "^1.3",
@@ -91,9 +91,9 @@
             "description": "Heart of Archict, this library load and manage Bricks",
             "support": {
                 "issues": "https://github.com/Archict/core/issues",
-                "source": "https://github.com/Archict/core/tree/v0.3.1"
+                "source": "https://github.com/Archict/core/tree/v1.0.0"
             },
-            "time": "2024-06-07T16:01:21+00:00"
+            "time": "2024-07-10T16:04:52+00:00"
         },
         {
             "name": "azjezz/psl",
