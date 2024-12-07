@@ -8,23 +8,23 @@
     "packages": [
         {
             "name": "archict/brick",
-            "version": "v1.0.1",
+            "version": "v1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Archict/brick.git",
-                "reference": "1db8c347e8505aed61317a1b2cf1f7a140deebb0"
+                "reference": "08157bd1ffa3298807fdb0f83dd8b94095e86e43"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Archict/brick/zipball/1db8c347e8505aed61317a1b2cf1f7a140deebb0",
-                "reference": "1db8c347e8505aed61317a1b2cf1f7a140deebb0",
+                "url": "https://api.github.com/repos/Archict/brick/zipball/08157bd1ffa3298807fdb0f83dd8b94095e86e43",
+                "reference": "08157bd1ffa3298807fdb0f83dd8b94095e86e43",
                 "shasum": ""
             },
             "require": {
                 "php": ">= 8.2"
             },
             "require-dev": {
-                "phpstan/phpstan": "^1.10",
+                "phpstan/phpstan": "^1.10 || ^2.0",
                 "slevomat/coding-standard": "^8.15",
                 "squizlabs/php_codesniffer": "^3.9",
                 "vimeo/psalm": "^5.22"
@@ -42,9 +42,9 @@
             "description": "Base library for Archict framework",
             "support": {
                 "issues": "https://github.com/Archict/brick/issues",
-                "source": "https://github.com/Archict/brick/tree/v1.0.1"
+                "source": "https://github.com/Archict/brick/tree/v1.0.2"
             },
-            "time": "2024-09-14T08:43:07+00:00"
+            "time": "2024-12-07T10:09:59+00:00"
         },
         {
             "name": "archict/core",
