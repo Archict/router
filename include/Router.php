@@ -29,8 +29,8 @@ use Throwable;
 final class Router
 {
     private RouteCollection $route_collection;
-    private ?ResponseInterface $response;
-    private ?ServerRequestInterface $request;
+    private ?ResponseInterface $response     = null;
+    private ?ServerRequestInterface $request = null;
 
     /**
      * @throws HTTPCodeNotHandledException
