@@ -91,13 +91,13 @@ final readonly class ResponseFactory
     }
 
     /**
-     * HTTP 304
+     * HTTP 301
      * Location: $uri
      */
     public function redirect(string $uri): self
     {
         return $this
-            ->withStatus(304)
+            ->withStatus(301)
             ->withHeader('Location', $uri);
     }
 }
