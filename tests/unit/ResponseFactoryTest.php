@@ -97,4 +97,12 @@ class ResponseFactoryTest extends TestCase
         self::assertSame(['application/xml'], $response->getHeader('Content-Type'));
         self::assertSame($xml->asXML(), $response->getBody()->getContents());
     }
+
+    public function testShortcutRedirect(): void
+    {
+        $response = ResponseFactory::build()->redirect('/foo')->get();
+
+        self::assertSame(304, $response->getStatusCode());
+        self::assertSame('/foo', $response->getHeaderLine('Location'));
+    }
 }
