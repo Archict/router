@@ -89,4 +89,15 @@ final readonly class ResponseFactory
             ->withHeader('Content-Type', 'application/xml')
             ->withBody(is_string($xml) ? $xml : (string) $xml->asXML());
     }
+
+    /**
+     * HTTP 304
+     * Location: $uri
+     */
+    public function redirect(string $uri): self
+    {
+        return $this
+            ->withStatus(304)
+            ->withHeader('Location', $uri);
+    }
 }
