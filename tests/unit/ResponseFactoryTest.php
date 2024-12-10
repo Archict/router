@@ -102,7 +102,7 @@ class ResponseFactoryTest extends TestCase
     {
         $response = ResponseFactory::build()->redirect('/foo')->get();
 
-        self::assertSame(304, $response->getStatusCode());
+        self::assertSame(301, $response->getStatusCode());
         self::assertSame('/foo', $response->getHeaderLine('Location'));
     }
 }
