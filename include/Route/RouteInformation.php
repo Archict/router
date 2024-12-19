@@ -29,6 +29,9 @@ namespace Archict\Router\Route;
 
 use Archict\Router\Method;
 use Archict\Router\RequestHandler;
+use Archict\Router\ResponseFactory;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * @internal
@@ -44,5 +47,44 @@ final readonly class RouteInformation
         public string $route_regex,
         public RequestHandler $handler,
     ) {
+    }
+
+    public static function buildDefaultHEAD(string $uri): self
+    {
+        return new self(
+            Method::HEAD,
+            $uri,
+            '//',
+            new class implements RequestHandler {
+                public function handle(ServerRequestInterface $request): string // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter
+                {
+                    return '';
+                }
+            },
+        );
+    }
+
+    /**
+     * @param Method[] $methods
+     */
+    public static function buildDefaultOPTIONS(string $uri, array $methods): self
+    {
+        $header_allow = implode(', ', array_unique(array_map(static fn(Method $method) => $method->value, [...$methods, Method::OPTIONS, Method::HEAD])));
+
+        return new self(
+            Method::OPTIONS,
+            $uri,
+            '//',
+            new class($header_allow) implements RequestHandler {
+                public function __construct(private readonly string $header_allow)
+                {
+                }
+
+                public function handle(ServerRequestInterface $request): ResponseInterface // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter
+                {
+                    return ResponseFactory::build()->withHeader('Allow', $this->header_allow)->get();
+                }
+            },
+        );
     }
 }

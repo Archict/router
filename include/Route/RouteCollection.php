@@ -83,6 +83,7 @@ final class RouteCollection
     public function getMatchingRoute(string $uri, string $method): RouteInformation
     {
         $have_found_route_but_method = false;
+        $matching_methods            = [];
         foreach ($this->routes as $route => $informations) {
             if (preg_match($route, $uri)) {
                 $have_found_route_but_method = true;
@@ -90,11 +91,19 @@ final class RouteCollection
                     if ($route_information->method === Method::ALL || $route_information->method->value === uppercase($method)) {
                         return $route_information;
                     }
+
+                    $matching_methods[] = $route_information->method;
                 }
             }
         }
 
         if ($have_found_route_but_method) {
+            if ($method === Method::HEAD->value) {
+                return RouteInformation::buildDefaultHEAD($uri);
+            } else if ($method === Method::OPTIONS->value) {
+                return RouteInformation::buildDefaultOPTIONS($uri, $matching_methods);
+            }
+
             throw new MethodNotAllowedException($method, $uri);
         } else {
             throw new NotFoundException($uri);
