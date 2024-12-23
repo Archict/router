@@ -36,7 +36,7 @@ final class RouteCollectorEvent
      * @var array<array{
      *     method: Method|non-empty-string,
      *     route: string,
-     *     handler: RequestHandler|callable(ServerRequestInterface): (ResponseInterface|string),
+     *     handler: RequestHandler|class-string<RequestHandler>|callable(ServerRequestInterface): (ResponseInterface|string),
      * }>
      */
     private array $routes = [];
@@ -44,16 +44,16 @@ final class RouteCollectorEvent
      * @var array<array{
      *     method: Method|non-empty-string,
      *     route: string,
-     *     handler: Middleware|callable(ServerRequestInterface): ServerRequestInterface
+     *     handler: Middleware|class-string<Middleware>|callable(ServerRequestInterface): ServerRequestInterface
      * }>
      */
     private array $middlewares = [];
 
     /**
      * @param Method|non-empty-string $method
-     * @param RequestHandler|callable(ServerRequestInterface): (ResponseInterface|string) $handler
+     * @param RequestHandler|class-string<RequestHandler>|callable(ServerRequestInterface): (ResponseInterface|string) $handler
      */
-    public function addRoute(Method|string $method, string $route, RequestHandler|callable $handler): void
+    public function addRoute(Method|string $method, string $route, RequestHandler|string|callable $handler): void
     {
         $this->routes[] = [
             'method'  => $method,
@@ -66,7 +66,7 @@ final class RouteCollectorEvent
      * @return array<array{
      *      method: Method|non-empty-string,
      *      route: string,
-     *      handler: RequestHandler|callable(ServerRequestInterface): (ResponseInterface|string),
+     *      handler: RequestHandler|class-string<RequestHandler>|callable(ServerRequestInterface): (ResponseInterface|string),
      *  }>
      */
     public function getCollectedRoutes(): array
@@ -76,9 +76,9 @@ final class RouteCollectorEvent
 
     /**
      * @param Method|non-empty-string $method
-     * @param Middleware|callable(ServerRequestInterface): ServerRequestInterface $handler
+     * @param Middleware|class-string<Middleware>|callable(ServerRequestInterface): ServerRequestInterface $handler
      */
-    public function addMiddleware(Method|string $method, string $route, Middleware|callable $handler): void
+    public function addMiddleware(Method|string $method, string $route, Middleware|string|callable $handler): void
     {
         $this->middlewares[] = [
             'method'  => $method,
@@ -91,7 +91,7 @@ final class RouteCollectorEvent
      * @return array<array{
      *      method: Method|non-empty-string,
      *      route: string,
-     *      handler: Middleware|callable(ServerRequestInterface): ServerRequestInterface
+     *      handler: Middleware|class-string<Middleware>|callable(ServerRequestInterface): ServerRequestInterface
      *  }>
      */
     public function getCollectedMiddlewares(): array
