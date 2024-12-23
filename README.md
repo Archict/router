@@ -62,6 +62,8 @@ a `Response`.
 
 Please note that you can define only one handler per route.
 
+You can also pass directly the classname, the Router will then instantiate it and inject Services.
+
 The first argument of method `RouteCollectorEvent::addRoute` must be a string of an allowed HTTP method. Enum `Method`
 contains list of allowed methods. If your route can match multiple method you can pass an array of method,
 or `Method::ALL`.

@@ -27,6 +27,7 @@ declare(strict_types=1);
 
 namespace Archict\Router\Route;
 
+use Archict\Core\Services\ServiceManager;
 use Archict\Router\Exception\HTTP\MethodNotAllowedException;
 use Archict\Router\Exception\HTTP\NotFoundException;
 use Archict\Router\IdentityMiddlewareStub;
@@ -41,7 +42,7 @@ final class RouteCollectionTest extends TestCase
 {
     public function testItCanAddRouteWithRequestHandler(): void
     {
-        $collection = new RouteCollection();
+        $collection = new RouteCollection(new ServiceManager());
         self::assertTrue(
             $collection->addRoute(
                 Method::GET,
@@ -58,15 +59,27 @@ final class RouteCollectionTest extends TestCase
 
     public function testItCanAddRouteWithCallable(): void
     {
-        $collection = new RouteCollection();
+        $collection = new RouteCollection(new ServiceManager());
         self::assertTrue(
             $collection->addRoute(Method::GET, 'route', static fn(ServerRequestInterface $request) => ResponseFactory::build()->get()) // phpcs:ignore
         );
     }
 
+    public function testItCanAddRouteWithClassname(): void
+    {
+        $collection = new RouteCollection(new ServiceManager());
+        $handler    = new class implements RequestHandler {
+            public function handle(ServerRequestInterface $request): ResponseInterface // phpcs:ignore
+            {
+                return ResponseFactory::build()->get();
+            }
+        };
+        self::assertTrue($collection->addRoute(Method::GET, 'route', $handler::class));
+    }
+
     public function testItNotAcceptIfAddTwiceSameRoute(): void
     {
-        $collection = new RouteCollection();
+        $collection = new RouteCollection(new ServiceManager());
         self::assertTrue(
             $collection->addRoute(Method::GET, 'route', static fn(ServerRequestInterface $request) => ResponseFactory::build()->get()) // phpcs:ignore
         );
@@ -77,7 +90,7 @@ final class RouteCollectionTest extends TestCase
 
     public function testItAcceptSameRouteDifferentMethod(): void
     {
-        $collection = new RouteCollection();
+        $collection = new RouteCollection(new ServiceManager());
         self::assertTrue(
             $collection->addRoute(Method::GET, 'route', static fn(ServerRequestInterface $request) => ResponseFactory::build()->get()) // phpcs:ignore
         );
@@ -88,7 +101,7 @@ final class RouteCollectionTest extends TestCase
 
     public function testItNotAcceptSameRouteWithMethodAll(): void
     {
-        $collection = new RouteCollection();
+        $collection = new RouteCollection(new ServiceManager());
         self::assertTrue(
             $collection->addRoute(Method::GET, 'route', static fn(ServerRequestInterface $request) => ResponseFactory::build()->get()) // phpcs:ignore
         );
@@ -99,7 +112,7 @@ final class RouteCollectionTest extends TestCase
 
     public function testItNotAcceptSameRouteIfFirstIsMethodAll(): void
     {
-        $collection = new RouteCollection();
+        $collection = new RouteCollection(new ServiceManager());
         self::assertTrue(
             $collection->addRoute(Method::ALL, 'route', static fn(ServerRequestInterface $request) => ResponseFactory::build()->get()) // phpcs:ignore
         );
@@ -110,7 +123,7 @@ final class RouteCollectionTest extends TestCase
 
     public function testItAcceptSeveralRoute(): void
     {
-        $collection = new RouteCollection();
+        $collection = new RouteCollection(new ServiceManager());
         self::assertTrue(
             $collection->addRoute(Method::GET, 'route1', static fn(ServerRequestInterface $request) => ResponseFactory::build()->get()) // phpcs:ignore
         );
@@ -124,7 +137,7 @@ final class RouteCollectionTest extends TestCase
 
     public function testItAcceptSameRouteWithDifferentGroup(): void
     {
-        $collection = new RouteCollection();
+        $collection = new RouteCollection(new ServiceManager());
         self::assertTrue(
             $collection->addRoute(Method::GET, '{group:\d+}', static fn(ServerRequestInterface $request) => ResponseFactory::build()->get()) // phpcs:ignore
         );
@@ -135,14 +148,14 @@ final class RouteCollectionTest extends TestCase
 
     public function testItThrowIfRouteNotFound(): void
     {
-        $collection = new RouteCollection();
+        $collection = new RouteCollection(new ServiceManager());
         self::expectException(NotFoundException::class);
         $collection->getMatchingRoute('', 'GET');
     }
 
     public function testItThrowIfMethodNotAllowed(): void
     {
-        $collection = new RouteCollection();
+        $collection = new RouteCollection(new ServiceManager());
         $collection->addRoute(Method::GET, 'route', static fn(ServerRequestInterface $request) => ResponseFactory::build()->get()); // phpcs:ignore
         self::expectException(MethodNotAllowedException::class);
         $collection->getMatchingRoute('route', 'POST');
@@ -150,7 +163,7 @@ final class RouteCollectionTest extends TestCase
 
     public function testItCanFindMatchingRouteSimple(): void
     {
-        $collection = new RouteCollection();
+        $collection = new RouteCollection(new ServiceManager());
         $collection->addRoute(Method::ALL, 'route', static fn(ServerRequestInterface $request) => ResponseFactory::build()->get()); // phpcs:ignore
         $route = $collection->getMatchingRoute('route', 'PATCH');
 
@@ -160,7 +173,7 @@ final class RouteCollectionTest extends TestCase
 
     public function testItCanFindMatchingRouteWithGroup(): void
     {
-        $collection = new RouteCollection();
+        $collection = new RouteCollection(new ServiceManager());
         $collection->addRoute(Method::GET, 'article/{id:\d+}', static fn(ServerRequestInterface $request) => ResponseFactory::build()->get()); // phpcs:ignore
         $route = $collection->getMatchingRoute('article/5', 'GET');
 
@@ -170,21 +183,28 @@ final class RouteCollectionTest extends TestCase
 
     public function testItCanAddMiddlewareWithCallable(): void
     {
-        $collection = new RouteCollection();
+        $collection = new RouteCollection(new ServiceManager());
         self::expectNotToPerformAssertions();
         $collection->addMiddleware(Method::GET, 'route', static fn(ServerRequestInterface $request) => $request);
     }
 
     public function testItCanAddMiddlewareWithMiddleware(): void
     {
-        $collection = new RouteCollection();
+        $collection = new RouteCollection(new ServiceManager());
         self::expectNotToPerformAssertions();
         $collection->addMiddleware(Method::GET, 'route', new IdentityMiddlewareStub());
     }
 
+    public function testItCanAddMiddlewareWithClassname(): void
+    {
+        $collection = new RouteCollection(new ServiceManager());
+        self::expectNotToPerformAssertions();
+        $collection->addMiddleware(Method::GET, 'route', IdentityMiddlewareStub::class);
+    }
+
     public function testItAcceptMultipleMiddlewareOnSameRoute(): void
     {
-        $collection = new RouteCollection();
+        $collection = new RouteCollection(new ServiceManager());
         self::expectNotToPerformAssertions();
         $collection->addMiddleware(Method::GET, 'route', new IdentityMiddlewareStub());
         $collection->addMiddleware(Method::GET, 'route', new IdentityMiddlewareStub());

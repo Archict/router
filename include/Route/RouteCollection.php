@@ -27,6 +27,7 @@ declare(strict_types=1);
 
 namespace Archict\Router\Route;
 
+use Archict\Core\Services\ServiceManager;
 use Archict\Router\Exception\HTTP\MethodNotAllowedException;
 use Archict\Router\Exception\HTTP\NotFoundException;
 use Archict\Router\Exception\RouterException;
@@ -51,11 +52,15 @@ final class RouteCollection
      */
     private array $middlewares = [];
 
+    public function __construct(private readonly ServiceManager $service_manager)
+    {
+    }
+
     /**
-     * @param RequestHandler|callable(ServerRequestInterface): (ResponseInterface|string) $handler
+     * @param RequestHandler|class-string<RequestHandler>|callable(ServerRequestInterface): (ResponseInterface|string) $handler
      * @throws RouterException
      */
-    public function addRoute(Method $method, string $route, RequestHandler|callable $handler): bool
+    public function addRoute(Method $method, string $route, RequestHandler|string|callable $handler): bool
     {
         $route_regex = RouteHelper::routeToRegex($route, false);
         if ($this->hasRoute($method, $route_regex)) {
@@ -66,11 +71,22 @@ final class RouteCollection
             $this->routes[$route_regex] = [];
         }
 
+        if (is_callable($handler)) {
+            $handler_instance = RouteHelper::callableToRequestHandler($handler);
+        } else if (is_string($handler)) {
+            $handler_instance = $this->service_manager->instantiateWithServices($handler);
+            if ($handler_instance === null) {
+                return false;
+            }
+        } else {
+            $handler_instance = $handler;
+        }
+
         $this->routes[$route_regex][] = new RouteInformation(
             $method,
             $route,
             RouteHelper::routeToRegex($route),
-            is_callable($handler) ? RouteHelper::callableToRequestHandler($handler) : $handler,
+            $handler_instance,
         );
 
         return true;
@@ -125,10 +141,10 @@ final class RouteCollection
     }
 
     /**
-     * @param Middleware|callable(ServerRequestInterface): ServerRequestInterface $handler
+     * @param Middleware|class-string<Middleware>|callable(ServerRequestInterface): ServerRequestInterface $handler
      * @throws RouterException
      */
-    public function addMiddleware(Method $method, string $route, Middleware|callable $handler): void
+    public function addMiddleware(Method $method, string $route, Middleware|string|callable $handler): void
     {
         $route_regex = RouteHelper::routeToMiddlewareRegex($route, false);
 
@@ -140,11 +156,22 @@ final class RouteCollection
             $this->middlewares[$route_regex][$method->value] = [];
         }
 
+        if (is_callable($handler)) {
+            $handler_instance = RouteHelper::callableToMiddleware($handler);
+        } else if (is_string($handler)) {
+            $handler_instance = $this->service_manager->instantiateWithServices($handler);
+            if ($handler_instance === null) {
+                return;
+            }
+        } else {
+            $handler_instance = $handler;
+        }
+
         $this->middlewares[$route_regex][$method->value][] = new MiddlewareInformation(
             $method,
             $route,
             RouteHelper::routeToMiddlewareRegex($route),
-            is_callable($handler) ? RouteHelper::callableToMiddleware($handler) : $handler,
+            $handler_instance,
         );
     }
 

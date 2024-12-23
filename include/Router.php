@@ -28,7 +28,7 @@ use Throwable;
 #[Service(RouterConfiguration::class, 'router.yml')]
 final class Router
 {
-    private RouteCollection $route_collection;
+    private readonly RouteCollection $route_collection;
     private ?ResponseInterface $response     = null;
     private ?ServerRequestInterface $request = null;
 
@@ -42,6 +42,7 @@ final class Router
         private readonly ServiceManager $service_manager,
     ) {
         (new ConfigurationValidator())->validate($this->configuration);
+        $this->route_collection = new RouteCollection($this->service_manager);
     }
 
     /**
@@ -138,8 +139,6 @@ final class Router
      */
     private function loadRoutes(): void
     {
-        $this->route_collection = new RouteCollection();
-
         $collector        = $this->event_dispatcher->dispatch(new RouteCollectorEvent());
         $collected_routes = $collector->getCollectedRoutes();
         foreach ($collected_routes as $collected_route) {
