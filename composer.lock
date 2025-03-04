@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "archict/brick",
-            "version": "v1.0.3",
+            "version": "v1.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Archict/brick.git",
-                "reference": "088dab658b538c86c359e3062d7f940aaead35e9"
+                "reference": "6cc438aa71e0cca7bd7f1c8bfbf660d0b25a22c9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Archict/brick/zipball/088dab658b538c86c359e3062d7f940aaead35e9",
-                "reference": "088dab658b538c86c359e3062d7f940aaead35e9",
+                "url": "https://api.github.com/repos/Archict/brick/zipball/6cc438aa71e0cca7bd7f1c8bfbf660d0b25a22c9",
+                "reference": "6cc438aa71e0cca7bd7f1c8bfbf660d0b25a22c9",
                 "shasum": ""
             },
             "require": {
@@ -42,9 +42,9 @@
             "description": "Base library for Archict framework",
             "support": {
                 "issues": "https://github.com/Archict/brick/issues",
-                "source": "https://github.com/Archict/brick/tree/v1.0.3"
+                "source": "https://github.com/Archict/brick/tree/v1.0.4"
             },
-            "time": "2024-12-30T08:32:46+00:00"
+            "time": "2025-03-03T16:47:39+00:00"
         },
         {
             "name": "archict/core",
@@ -5018,5 +5018,5 @@
         "ext-simplexml": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.3.0"
 }
